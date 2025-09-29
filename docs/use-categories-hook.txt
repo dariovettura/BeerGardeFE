@@ -1,0 +1,351 @@
+===============================================================================
+                    DOCUMENTAZIONE HOOK use-categories
+===============================================================================
+
+PANORAMICA
+----------
+L'hook use-categories fornisce un'interfaccia completa per gestire le operazioni
+CRUD (Create, Read, Update, Delete) delle categorie utilizzando Supabase.
+
+IMPORT
+------
+import { 
+  useCategories, 
+  useCategory, 
+  useCreateCategory, 
+  useUpdateCategory, 
+  useDeleteCategory 
+} from '@/hooks/retrieve/use-categories'
+
+===============================================================================
+HOOK DISPONIBILI
+===============================================================================
+
+1. useCategories(filters?)
+----------------------------
+Recupera tutte le categorie con filtri opzionali.
+
+PARAMETRI:
+- filters (opzionale): Oggetto CategoryFilters per filtrare i risultati
+
+RITORNA:
+- data: Array<Category> - Lista delle categorie
+- isLoading: boolean - Stato di caricamento
+- error: Error | null - Eventuali errori
+- refetch: function - Funzione per ricaricare i dati
+
+ESEMPIO:
+const { data: categories, isLoading, error } = useCategories()
+
+// Con filtri
+const { data: categories } = useCategories({
+  tipology: 'prodotto semplice',
+  search: 'pizza',
+  sort_by: 'name',
+  sort_order: 'asc'
+})
+
+2. useCategory(id)
+------------------
+Recupera una categoria specifica per ID.
+
+PARAMETRI:
+- id: string - ID della categoria da recuperare
+
+RITORNA:
+- data: Category | undefined - Dati della categoria
+- isLoading: boolean - Stato di caricamento
+- error: Error | null - Eventuali errori
+
+ESEMPIO:
+const { data: category, isLoading, error } = useCategory('category-id')
+
+3. useCreateCategory()
+---------------------
+Crea una nuova categoria.
+
+RITORNA:
+- mutateAsync: function - Funzione per creare la categoria
+- isLoading: boolean - Stato di caricamento
+- error: Error | null - Eventuali errori
+
+ESEMPIO:
+const createCategory = useCreateCategory()
+
+const handleCreate = async () => {
+  try {
+    await createCategory.mutateAsync({
+      name: 'Pizze',
+      description: 'Categoria per le pizze',
+      tipology: 'prodotto semplice',
+      sort_order: 1
+    })
+  } catch (error) {
+    console.error('Errore:', error)
+  }
+}
+
+4. useUpdateCategory()
+---------------------
+Aggiorna una categoria esistente.
+
+RITORNA:
+- mutateAsync: function - Funzione per aggiornare la categoria
+- isLoading: boolean - Stato di caricamento
+- error: Error | null - Eventuali errori
+
+ESEMPIO:
+const updateCategory = useUpdateCategory()
+
+const handleUpdate = async () => {
+  try {
+    await updateCategory.mutateAsync({
+      id: 'category-id',
+      name: 'Pizze Speciali',
+      description: 'Categoria aggiornata'
+    })
+  } catch (error) {
+    console.error('Errore:', error)
+  }
+}
+
+5. useDeleteCategory()
+---------------------
+Elimina una categoria.
+
+RITORNA:
+- mutateAsync: function - Funzione per eliminare la categoria
+- isLoading: boolean - Stato di caricamento
+- error: Error | null - Eventuali errori
+
+ESEMPIO:
+const deleteCategory = useDeleteCategory()
+
+const handleDelete = async (categoryId: string) => {
+  try {
+    await deleteCategory.mutateAsync(categoryId)
+  } catch (error) {
+    console.error('Errore:', error)
+  }
+}
+
+===============================================================================
+TIPI TYPESCRIPT
+===============================================================================
+
+Category:
+---------
+interface Category {
+  id: string
+  name: string
+  description?: string
+  sort_order: number
+  tipology: CategoryTipology
+  image?: string
+  created_at: string
+  updated_at: string
+}
+
+CategoryTipology:
+-----------------
+type CategoryTipology = 
+  | 'prodotto semplice'
+  | 'prodotto semplice con variabile'
+  | 'gruppo di prodotti'
+
+CategoryFilters:
+----------------
+interface CategoryFilters {
+  tipology?: CategoryTipology
+  search?: string
+  sort_by?: 'name' | 'sort_order' | 'created_at'
+  sort_order?: 'asc' | 'desc'
+}
+
+CreateCategoryParams:
+--------------------
+interface CreateCategoryParams {
+  name: string
+  description?: string
+  sort_order?: number
+  tipology?: CategoryTipology
+  image?: string
+}
+
+UpdateCategoryParams:
+--------------------
+interface UpdateCategoryParams {
+  id: string
+  name?: string
+  description?: string
+  sort_order?: number
+  tipology?: CategoryTipology
+  image?: string
+}
+
+===============================================================================
+ESEMPI PRATICI
+===============================================================================
+
+1. LISTA SEMPLICE CON LOADING
+-----------------------------
+function CategoriesList() {
+  const { data: categories, isLoading, error } = useCategories()
+
+  if (isLoading) return <div>Caricamento...</div>
+  if (error) return <div>Errore: {error.message}</div>
+
+  return (
+    <ul>
+      {categories?.map(category => (
+        <li key={category.id}>{category.name}</li>
+      ))}
+    </ul>
+  )
+}
+
+2. FORM DI CREAZIONE
+--------------------
+function CreateCategoryForm() {
+  const createCategory = useCreateCategory()
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    tipology: 'prodotto semplice' as CategoryTipology
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await createCategory.mutateAsync(formData)
+      setFormData({ name: '', description: '', tipology: 'prodotto semplice' })
+    } catch (error) {
+      console.error('Errore creazione:', error)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={formData.name}
+        onChange={(e) => setFormData({...formData, name: e.target.value})}
+        placeholder="Nome categoria"
+        required
+      />
+      <textarea
+        value={formData.description}
+        onChange={(e) => setFormData({...formData, description: e.target.value})}
+        placeholder="Descrizione"
+      />
+      <select
+        value={formData.tipology}
+        onChange={(e) => setFormData({...formData, tipology: e.target.value as CategoryTipology})}
+      >
+        <option value="prodotto semplice">Prodotto Semplice</option>
+        <option value="prodotto semplice con variabile">Con Variabile</option>
+        <option value="gruppo di prodotti">Gruppo di Prodotti</option>
+      </select>
+      <button type="submit" disabled={createCategory.isLoading}>
+        {createCategory.isLoading ? 'Creazione...' : 'Crea Categoria'}
+      </button>
+    </form>
+  )
+}
+
+3. FILTRI E RICERCA
+-------------------
+function CategoriesWithFilters() {
+  const [filters, setFilters] = useState<CategoryFilters>({})
+  const { data: categories } = useCategories(filters)
+
+  return (
+    <div>
+      <input
+        placeholder="Cerca categorie..."
+        onChange={(e) => setFilters({...filters, search: e.target.value})}
+      />
+      <select
+        onChange={(e) => setFilters({...filters, tipology: e.target.value as CategoryTipology})}
+      >
+        <option value="">Tutte le tipologie</option>
+        <option value="prodotto semplice">Prodotto Semplice</option>
+        <option value="prodotto semplice con variabile">Con Variabile</option>
+        <option value="gruppo di prodotti">Gruppo di Prodotti</option>
+      </select>
+      
+      <div>
+        {categories?.map(category => (
+          <div key={category.id}>
+            <h3>{category.name}</h3>
+            <p>{category.description}</p>
+            <span>{category.tipology}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+===============================================================================
+GESTIONE ERRORI
+===============================================================================
+
+Tutti gli hook includono gestione automatica degli errori:
+
+1. TOAST NOTIFICATIONS: Messaggi di successo/errore automatici
+2. LOGGING: Errori loggati nella console per debug
+3. RETRY: Possibilità di riprovare le operazioni fallite
+4. LOADING STATES: Stati di caricamento per UX migliore
+
+===============================================================================
+CACHE E INVALIDATION
+===============================================================================
+
+Gli hook utilizzano React Query per:
+
+1. CACHE AUTOMATICA: I dati vengono cachati per 5 minuti
+2. INVALIDATION: Le query correlate si aggiornano automaticamente
+3. BACKGROUND REFETCH: Aggiornamento in background quando necessario
+4. OPTIMISTIC UPDATES: Aggiornamenti ottimistici per UX fluida
+
+===============================================================================
+CONFIGURAZIONE
+===============================================================================
+
+Gli hook utilizzano la configurazione centralizzata di Supabase:
+- File: @/lib/supabase-config.ts
+- Endpoint: /rest/v1/categories
+- Autenticazione: Bearer token automatico
+- Headers: Content-Type e Authorization gestiti automaticamente
+
+===============================================================================
+TROUBLESHOOTING
+===============================================================================
+
+PROBLEMI COMUNI:
+
+1. "Categorie non trovate"
+   - Verifica che l'utente sia autenticato
+   - Controlla i permessi RLS in Supabase
+   - Verifica la connessione di rete
+
+2. "Errore di autenticazione"
+   - Il token potrebbe essere scaduto
+   - Verifica la configurazione Supabase
+   - Controlla le credenziali
+
+3. "Loading infinito"
+   - Verifica la connessione di rete
+   - Controlla i log della console
+   - Verifica la configurazione degli endpoint
+
+DEBUG:
+- Abilita i log di React Query
+- Controlla la tabella categories in Supabase
+- Verifica i permessi RLS
+
+===============================================================================
+VERSIONE: 1.0.0
+DATA: 2024
+AUTORE: BeerFE Team
+===============================================================================
