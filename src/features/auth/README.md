@@ -51,17 +51,20 @@ function MyComponent() {
 }
 ```
 
-### 3. **Nuovo Sistema di Autenticazione**
+### 3. **Sistema di Autenticazione Supabase**
 
 ```tsx
-import { useApiInterceptor } from '@/lib/api-interceptor'
+import { useAuthWithRetrieve } from '@/hooks/use-auth-with-retrieve'
 
 function LoginForm() {
-  const { login, logout } = useApiInterceptor()
+  const { performLogin, isSubmitting } = useAuthWithRetrieve()
 
   const handleLogin = async (credentials) => {
     try {
-      await login(credentials.fsUser, credentials.fsPassword)
+      await performLogin({
+        email: credentials.email,
+        password: credentials.password
+      })
       // Login successful
     } catch (error) {
       // Handle error

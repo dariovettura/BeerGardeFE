@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import { useApiInterceptor } from '@/lib/api-interceptor'
+import { supabaseAuthService } from '@/lib/supabase-auth'
+import { useAuthStore } from '@/features/auth/stores/authStore'
 import { extractErrorMessage } from '@/utils/handle-server-error'
 
 interface LoginData {
@@ -11,24 +12,20 @@ interface LoginData {
 
 export const useAuthWithRetrieve = () => {
   const navigate = useNavigate()
-  const { login } = useApiInterceptor()
+  const authStore = useAuthStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-
-
 
   const performLogin = async (data: LoginData) => {
     setIsSubmitting(true)
-
     
     try {
-      // 1. Esegui il login
-      await login(data.email, data.password)
+      // 1. Esegui il login con Supabase
+      const { userInfo, refreshToken } = await supabaseAuthService.loginWithRefreshToken(data.email, data.password)
+      
+      // 2. Salva i dati di autenticazione nello store
+      authStore.setAuth(userInfo, refreshToken)
 
-    
-
-
-      // 4. Reindirizza alla dashboard
+      // 3. Reindirizza alla dashboard
       navigate({
         to: '/dashboard/overview',
         params: {} as Record<string, never>,
@@ -47,7 +44,6 @@ export const useAuthWithRetrieve = () => {
       throw error
     } finally {
       setIsSubmitting(false)
-
     }
   }
 

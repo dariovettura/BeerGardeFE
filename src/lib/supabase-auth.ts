@@ -5,9 +5,11 @@ import {
 } from '@/types/supabase'
 import { UserInfo } from '@/types/user'
 
-// Configurazione Supabase
-const SUPABASE_URL = 'https://fzlgadmbipqrkqbjjxyv.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6bGdhZG1iaXBxcmtxYmpqeHl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4OTI2MzAsImV4cCI6MjA3NDQ2ODYzMH0.7HwLWN4xe6v7Eg5xycJsgFrNfR_HA-E4MdjffmEoQF8'
+import { SUPABASE_CONFIG } from './supabase-config'
+
+// Configurazione Supabase (ora centralizzata)
+const SUPABASE_URL = SUPABASE_CONFIG.url
+const SUPABASE_ANON_KEY = SUPABASE_CONFIG.anonKey
 
 /**
  * Converte la risposta di Supabase nel formato UserInfo esistente
@@ -46,7 +48,7 @@ class SupabaseAuthService {
    * Effettua il login con Supabase e restituisce sia UserInfo che refresh token
    */
   async loginWithRefreshToken(email: string, password: string): Promise<{ userInfo: UserInfo; refreshToken: string }> {
-    const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    const response = await fetch(`${SUPABASE_URL}${SUPABASE_CONFIG.endpoints.auth}/token?grant_type=password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -96,7 +98,7 @@ class SupabaseAuthService {
    */
   async logout(accessToken: string): Promise<void> {
     try {
-      const response = await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+      const response = await fetch(`${SUPABASE_URL}${SUPABASE_CONFIG.endpoints.auth}/logout`, {
         method: 'POST',
         headers: {
           'apikey': SUPABASE_ANON_KEY,
@@ -119,7 +121,7 @@ class SupabaseAuthService {
    */
   async getCurrentUser(accessToken: string): Promise<SupabaseUserResponse | null> {
     try {
-      const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      const response = await fetch(`${SUPABASE_URL}${SUPABASE_CONFIG.endpoints.auth}/user`, {
         method: 'GET',
         headers: {
           'apikey': SUPABASE_ANON_KEY,
@@ -143,7 +145,7 @@ class SupabaseAuthService {
    * Refresh del token
    */
   async refreshToken(refreshToken: string): Promise<UserInfo> {
-    const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+    const response = await fetch(`${SUPABASE_URL}${SUPABASE_CONFIG.endpoints.auth}/token?grant_type=refresh_token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -172,7 +174,7 @@ class SupabaseAuthService {
    * Refresh del token con nuovo refresh token
    */
   async refreshTokenWithNewRefresh(refreshToken: string): Promise<{ userInfo: UserInfo; refreshToken: string }> {
-    const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+    const response = await fetch(`${SUPABASE_URL}${SUPABASE_CONFIG.endpoints.auth}/token?grant_type=refresh_token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
