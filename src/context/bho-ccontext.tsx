@@ -9,7 +9,8 @@ export default function ContatoreTutorial() {
   // Funzioni per gestire i click sui bottoni
   const aumenta = () => {
     setContatore(contatore + 1);
-    setColore('green');
+    //ho modificato il colore a red
+    setColore('red');
   };
 
   const diminuisci = () => {
@@ -26,7 +27,8 @@ export default function ContatoreTutorial() {
     <div className="min-h-screen bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
         {/* Titolo */}
-        <h1 className="text-3xl font-bold text-center mb-2 text-gray-800">
+        {/* ho modificato il titolo a red */}
+        <h1 className="text-red-500 font-bold text-3xl">
           Il Mio Primo Contatore
         </h1>
         <p className="text-center text-gray-600 mb-8">
